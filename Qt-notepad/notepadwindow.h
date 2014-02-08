@@ -11,6 +11,7 @@
 #include <QFontDialog>
 #include <QClipboard>
 #include <QMessageBox>
+#include <QToolBar>
 
 
 class NotepadWindow : public QMainWindow
@@ -65,6 +66,9 @@ private:
     QAction* actAyudaAcercade_;
 
     QClipboard* portapapeles_;
+
+    //Barra de herramientas.
+    QToolBar* tlbPrincipal;
 
 };
 
