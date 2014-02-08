@@ -44,6 +44,13 @@ NotepadWindow::NotepadWindow(QWidget *parent)
     actArchivoGuardar_->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_G));
     //Se añade la acción Guardar al menú Archivo.
     mnuArchivo_->addAction(actArchivoGuardar_);
+
+    //Se inicializa la acción Cerrar.
+    actArchivoCerrar_ = new QAction(tr("&Cerrar"), this);
+    actArchivoCerrar_->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
+    //Se añade la acción Cerrar al menú Archivo.
+    mnuArchivo_->addAction(actArchivoCerrar_);
+
     //-------------------
 
 
@@ -53,12 +60,24 @@ NotepadWindow::NotepadWindow(QWidget *parent)
     mainMenu_->addMenu(mnuEditar_);
 
     actEditarCopiar_ = new QAction(tr("&Copiar"), this);
-    actEditarCopiar_->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_F));
+    actEditarCopiar_->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_C));
     mnuEditar_->addAction(actEditarCopiar_);
 
     actEditarPegar_ = new QAction(tr("&Pegar"), this);
     actEditarPegar_->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_V));
     mnuEditar_->addAction(actEditarPegar_);
+
+    actEditarCortar_ = new QAction(tr("Cor&tar"), this);
+    actEditarCortar_->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X));
+    mnuEditar_->addAction(actEditarCortar_);
+
+    actEditarDeshacer_ = new QAction(tr("&Deshacer"), this);
+    actEditarDeshacer_->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Z));
+    mnuEditar_->addAction(actEditarDeshacer_);
+
+    actEditarRehacer_ = new QAction(tr("&Rehacer"), this);
+    actEditarRehacer_->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Y));
+    mnuEditar_->addAction(actEditarRehacer_);
     //--------------------
 
 
@@ -68,15 +87,32 @@ NotepadWindow::NotepadWindow(QWidget *parent)
     mainMenu_->addMenu(mnuFormato_);
 
     actFormatoFuente_ = new QAction(tr("&Fuente"), this);
+    actFormatoFuente_->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_F));
     mnuFormato_->addAction(actFormatoFuente_);
     //--------------------
 
-    //Conexiones: conectamos las acciones de los menus con nuestros slots.
+    //----AYUDA----------
+    mnuAyuda_ = new QMenu(tr("A&yuda"), this);
+    //Se añade la opción Ayuda a la barra de menú.
+    mainMenu_->addMenu(mnuAyuda_);
+
+    actAyudaAcercade_ = new QAction(tr("Ac&erca de..."), this);
+    actAyudaAcercade_->setShortcut(QKeySequence(Qt::Key_F1));
+    mnuAyuda_->addAction(actAyudaAcercade_);
+    //--------------------
+
+
+
+    //CONEXIONES: conectamos las acciones de los menus con nuestros slots.
 
     //Al pinchar sobre Abrir se invocará el slot (método) alAbrir().
     connect(actArchivoAbrir_, SIGNAL(triggered()), this, SLOT(alAbrir()));
     //Al pinchar sobre Guardar se invocará el slot (método) alGuardar().
     connect(actArchivoGuardar_, SIGNAL(triggered()), this, SLOT(alGuardar()));
+    //Al pinchar sobre Cerrar se invocará el slot close() de esta ventana (this->close()),
+    // que es un método predefinido y que podemos invocar.
+    connect(actArchivoCerrar_, SIGNAL(triggered()), this, SLOT(close()));
+
     //Al pinchar sobre Copiar se invocará al slot copy() de txtEditor_,
     // que es un método ya predefinido. Es decir, los cuadros de texto ya tienen
     // un método para copiar y que podemos referenciar.
@@ -85,8 +121,26 @@ NotepadWindow::NotepadWindow(QWidget *parent)
     // que es un método ya predefinido. Es decir, los cuadros de texto ya tienen
     // un método para pegar y que podemos referenciar.
     connect(actEditarPegar_, SIGNAL(triggered()), txtEditor_, SLOT(paste()));
+    //Al pinchar sobre Cortar se invocará al slot cut() de txtEditor_,
+    // que es un método ya predefinido. Es decir, los cuadros de texto ya tienen
+    // un método para cortar y que podemos referenciar.
+    connect(actEditarCortar_, SIGNAL(triggered()), txtEditor_, SLOT(cut()));
+    //Al pinchar sobre Deshacer se invocará al slot undo() de txtEditor_,
+    // que es un método ya predefinido. Es decir, los cuadros de texto ya tienen
+    // un método para deshacer y que podemos referenciar.
+    connect(actEditarDeshacer_, SIGNAL(triggered()), txtEditor_, SLOT(undo()));
+    //Al pinchar sobre Rehacer se invocará al slot redo() de txtEditor_,
+    // que es un método ya predefinido. Es decir, los cuadros de texto ya tienen
+    // un método para rehacer y que podemos referenciar.
+    connect(actEditarRehacer_, SIGNAL(triggered()), txtEditor_, SLOT(redo()));
+
     //Al pinchar sobre Fuente se invocará el slot (método) alFuente().
     connect(actFormatoFuente_, SIGNAL(triggered()), this, SLOT(alFuente()));
+
+    //Al pinchar sobre "Acerca de" se invocará el slot (método) alAcercade().
+    connect(actAyudaAcercade_, SIGNAL(triggered()), this, SLOT(alAcercade()));
+
+
 
 }
 
@@ -171,3 +225,10 @@ void NotepadWindow::alFuente()
     }
 }
 
+void NotepadWindow::alAcercade()
+{
+       QMessageBox messageAcercade;
+       messageAcercade.setText("Editor creado en el curso de Qt");
+       messageAcercade.exec();
+
+}
