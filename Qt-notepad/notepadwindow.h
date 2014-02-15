@@ -27,10 +27,14 @@ private slots:
     void alGuardar();
     void alFuente();
     void alAcercade();
+    void alNegrita();
+    void alCursiva();
+    void alSubrayado();
 
 private:
-    //Cuadro de texto.
-    QPlainTextEdit* txtEditor_;
+    //Cuadro de texto. La clase "QTextEdit" permite pegar texto en colores y HTML, por ejemplo.
+    //En cambio la clase "QPlainTextEdit" no permite hacer esto.
+    QTextEdit* txtEditor_;
     //Barra de menú.
     QMenuBar* mainMenu_;
     //Opción Archivo para la barra de menú.
@@ -67,8 +71,14 @@ private:
 
     QClipboard* portapapeles_;
 
-    //Barra de herramientas.
-    QToolBar* tlbPrincipal;
+    //Barra de herramientas (ToolBar).
+    QToolBar* tlbPrincipal_;
+    //Acción "Negrita" de la barra de herramientas.
+    QAction* actTlbNegrita_;
+    //Acción "Cursiva" de la barra de herramientas.
+    QAction* actTlbCursiva_;
+    //Acción "Subrayado" de la barra de herramientas.
+    QAction* actTlbSubrayado_;
 
 };
 

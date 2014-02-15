@@ -9,13 +9,17 @@ NotepadWindow::NotepadWindow(QWidget *parent)
     this->setGeometry(30, 30, 800, 600);
 
     //Establecemos el título de la ventana
-    this->setWindowTitle(tr("Super editor de texto"));
+    this->setWindowTitle(tr("Editor de texto"));
 
-    txtEditor_= new QPlainTextEdit(this);//this indica el padre. toda clase en QT tiene un padre
-                                           // que siempre será otro objeto de QT.
+    txtEditor_= new QTextEdit(this);//"this" indica el padre. toda clase en QT tiene un padre
+                                           // que siempre será otro objeto de QT.    
 
     //Se centra el cuadro de texto
     setCentralWidget(txtEditor_);
+
+
+    //--------MENÚ PRINCIPAL--------
+    //------------------------------
 
     //Inicializamos los menús
     mainMenu_ = new QMenuBar(this);
@@ -35,6 +39,7 @@ NotepadWindow::NotepadWindow(QWidget *parent)
 
     //Se inicializa la acción Abrir.
     actArchivoAbrir_ = new QAction(tr("&Abrir"), this);
+    //Teclas de acceso rápido.
     actArchivoAbrir_->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_A));
     //Se añade la acción Abrir al menú Archivo.
     mnuArchivo_->addAction(actArchivoAbrir_);
@@ -59,7 +64,9 @@ NotepadWindow::NotepadWindow(QWidget *parent)
     //Se añade la opción Editar a la barra de menú.
     mainMenu_->addMenu(mnuEditar_);
 
-    actEditarCopiar_ = new QAction(tr("&Copiar"), this);
+    //Se puede añadir un icono a cada acción. La imagen se encuentra en la rama de los recursos.
+    QIcon* icono = new QIcon(":/iconos/Recursos/iconos/camera-photo.png");
+    actEditarCopiar_ = new QAction(*icono, tr("&Copiar"), this);
     actEditarCopiar_->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_C));
     mnuEditar_->addAction(actEditarCopiar_);
 
@@ -100,10 +107,46 @@ NotepadWindow::NotepadWindow(QWidget *parent)
     actAyudaAcercade_->setShortcut(QKeySequence(Qt::Key_F1));
     mnuAyuda_->addAction(actAyudaAcercade_);
     //--------------------
+    //--------------------
 
+
+    //-----BARRA DE HERRAMIENTAS-----
+    //-------------------------------
+
+    //Se inicializa la barra de herramientas.
+    tlbPrincipal_ = new QToolBar(this);
+
+    //Se añade la barra de herramientas a esta ventana principal.
+    this->addToolBar(tlbPrincipal_);
+    //
+    this->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+
+    //Se añade la acción copiar a la barra de herramientas, que ya se había creado para
+    // el menú Editar.
+    tlbPrincipal_->addAction(actEditarCopiar_);
+
+    //Se inicializa y se añade la acción "Negrita" a la barra de herramientas.
+    //Se usa el mismo icono que para la acción copiar (por que no se han añadido más iconos).
+    actTlbNegrita_ = new QAction(*icono, tr("Negrita"), this);
+    tlbPrincipal_->addAction(actTlbNegrita_);
+
+    //Se inicializa y se añade la acción "Cursiva" a la barra de herramientas.
+    //Se usa el mismo icono que para la acción copiar (por que no se han añadido más iconos).
+    actTlbCursiva_ = new QAction(*icono, tr("Cursiva"), this);
+    tlbPrincipal_->addAction(actTlbCursiva_);
+
+    //Se inicializa y se añade la acción "Subrayado" a la barra de herramientas.
+    //Se usa el mismo icono que para la acción copiar (por que no se han añadido más iconos).
+    actTlbSubrayado_ = new QAction(*icono, "Subrayado", this);
+    tlbPrincipal_->addAction(actTlbSubrayado_);
+    //--------------------
+    //--------------------
 
 
     //CONEXIONES: conectamos las acciones de los menus con nuestros slots.
+
+    //--------MENÚ PRINCIPAL--------
+    //------------------------------
 
     //Al pinchar sobre Abrir se invocará el slot (método) alAbrir().
     connect(actArchivoAbrir_, SIGNAL(triggered()), this, SLOT(alAbrir()));
@@ -138,9 +181,24 @@ NotepadWindow::NotepadWindow(QWidget *parent)
     connect(actFormatoFuente_, SIGNAL(triggered()), this, SLOT(alFuente()));
 
     //Al pinchar sobre "Acerca de" se invocará el slot (método) alAcercade().
-    connect(actAyudaAcercade_, SIGNAL(triggered()), this, SLOT(alAcercade()));
+    connect(actAyudaAcercade_, SIGNAL(triggered()), this, SLOT(alAcercade()));    
+    //--------------------
+    //--------------------
 
 
+    //-----BARRA DE HERRAMIENTAS-----
+    //-------------------------------
+
+    //Al pinchar sobre "Negrita" se invocará el slot (método) alNegrita().
+    connect(actTlbNegrita_, SIGNAL(triggered()), this, SLOT(alNegrita()));
+
+    //Al pinchar sobre "Cursiva" se invocará el slot (método) alCursiva().
+    connect(actTlbCursiva_, SIGNAL(triggered()), this, SLOT(alCursiva()));
+
+    //Al pinchar sobre "Subrayado" se invocará el slot (método) alSubrayado().
+    connect(actTlbSubrayado_, SIGNAL(triggered()), this, SLOT(alSubrayado()));
+    //--------------------
+    //--------------------
 
 }
 
@@ -220,15 +278,113 @@ void NotepadWindow::alFuente()
     bool ok;
     QFont font = QFontDialog::getFont(&ok, txtEditor_->font(), this);
     if (ok) {
-        // Si el usuario hizo click en OK, se establece la fuente seleccionada
-        txtEditor_->setFont(font);
+        // Si el usuario hizo click en OK, se establece la fuente escogida.
+
+        //Si hay texto seleccionado, la fuente sólo se aplica a esa selección.
+        if (txtEditor_->textCursor().hasSelection())
+        {
+            QTextCharFormat formatoText;
+            formatoText.setFont(font);
+            txtEditor_->textCursor().setCharFormat(formatoText);
+        }
+        else
+            txtEditor_->setFont(font);
     }
 }
 
+//Se muestra un message box con un mensaje cualquiera.
 void NotepadWindow::alAcercade()
 {
        QMessageBox messageAcercade;
        messageAcercade.setText("Editor creado en el curso de Qt");
-       messageAcercade.exec();
+       messageAcercade.exec();       
+}
 
+//Se establece o se quita la Negrita.
+void NotepadWindow::alNegrita()
+{
+    QTextCharFormat formatoText;
+
+    //Si hay texto seleccionado, el cambio sólo se aplica a dicha selección.
+    if (txtEditor_->textCursor().hasSelection())
+    {
+        //Si la fuente ya está en negrita se quita.
+        //Si no está en negrita se establece como tal.
+        formatoText.setFontWeight((txtEditor_->textCursor().charFormat().fontWeight() == QFont::Bold) ? QFont::Normal : QFont::Bold);
+
+        //Se usa "mergeCharFormat" en lugar de "setCharFormat" para combinar con otras opciones
+        // que ya pueden estar establecidas como cursiva o subrayado.
+        txtEditor_->textCursor().mergeCharFormat(formatoText);
+    }
+    //Si no hay texto seleccionado, el cambio afectará a lo que se escriba a partir de ahora.
+    else
+    {
+        //Si la fuente ya está en negrita se quita.
+        //Si no está en negrita se establece como tal.
+        formatoText.setFontWeight((txtEditor_->currentCharFormat().fontWeight() == QFont::Bold) ? QFont::Normal : QFont::Bold);
+
+        //Se usa "mergeCharFormat" en lugar de "setCharFormat" para combinar con otras opciones
+        // que ya pueden estar establecidas como cursiva o subrayado.
+        txtEditor_->mergeCurrentCharFormat(formatoText);
+    }
+}
+
+
+//Se establece o se quita la Cursiva.
+void NotepadWindow::alCursiva()
+{
+    QTextCharFormat formatoText;
+
+    //Si hay texto seleccionado, el cambio sólo se aplica a dicha selección.
+    if (txtEditor_->textCursor().hasSelection())
+    {
+        //Si la fuente ya está en cursiva se quita.
+        //Si no está en cursiva se establece como tal.
+        formatoText.setFontItalic(txtEditor_->textCursor().charFormat().fontItalic() ? false : true);
+
+        //Se usa "mergeCharFormat" en lugar de "setCharFormat" para combinar con otras opciones
+        // que ya pueden estar establecidas como negrita o subrayado.
+        txtEditor_->textCursor().mergeCharFormat(formatoText);
+    }
+    //Si no hay texto seleccionado, el cambio afectará a lo que se escriba a partir de ahora.
+    else
+    {
+        //Si la fuente ya está en cursiva se quita.
+        //Si no está en cursiva se establece como tal.
+        formatoText.setFontItalic(txtEditor_->currentCharFormat().fontItalic() ? false : true);
+
+        //Se usa "mergeCharFormat" en lugar de "setCharFormat" para combinar con otras opciones
+        // que ya pueden estar establecidas como negrita o subrayado.
+        txtEditor_->mergeCurrentCharFormat(formatoText);
+    }
+}
+
+
+//Se establece o se quita el Subrayado.
+void NotepadWindow::alSubrayado()
+{
+    QTextCharFormat formatoText;
+
+    //Si hay texto seleccionado, el cambio sólo se aplica a dicha selección.
+    if (txtEditor_->textCursor().hasSelection())
+    {
+        //Si la fuente ya está subrayada se quita.
+        //Si no está subrayada se establece como tal.
+        formatoText.setFontUnderline(txtEditor_->textCursor().charFormat().fontUnderline() ? false : true);
+
+        //Se usa "mergeCharFormat" en lugar de "setCharFormat" para combinar con otras opciones
+        // que ya pueden estar establecidas como negrita o cursiva.
+        txtEditor_->textCursor().mergeCharFormat(formatoText);
+    }
+    //Si no hay texto seleccionado, el cambio afectará a lo que se escriba a partir de ahora.
+    else
+    {
+        //Si la fuente ya está subrayada se quita.
+        //Si no está subrayada se establece como tal.
+        formatoText.setFontUnderline(txtEditor_->currentCharFormat().fontUnderline() ? false : true);
+
+        //Se usa "mergeCharFormat" en lugar de "setCharFormat" para combinar con otras opciones
+        // que ya pueden estar establecidas como negrita o cursiva.
+        txtEditor_->mergeCurrentCharFormat(formatoText);
+    }
 }
